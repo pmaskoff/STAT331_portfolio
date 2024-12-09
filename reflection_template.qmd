@@ -144,7 +144,19 @@ get_fit_now_check_in <- get_fit_now_check_in |>
 ```{r}
 #| label: wd-4-numeric
 # Lab 3 Question 5
-
+teachers_1 |>
+  filter(question_no == 901) |>
+  group_by(teacher_id) |>
+  summarise(avg_q1 = mean(SET_score_avg, na.rm = TRUE)) |>
+  mutate(
+    rank = case_when(
+      avg_q1 == max(avg_q1) ~ "Highest",
+      avg_q1 == min(avg_q1) ~ "Lowest",
+      TRUE ~ "" 
+    )
+  ) |>
+  filter(rank != "") |>
+  print()
 ```
 
 -   character -- specifically a string (example must use functions from **stringr**)
@@ -789,17 +801,19 @@ Yanna this is amazing code. So nice to look at. If I had to say something about 
 
 Your use of joins is very good, and your revisions do a great job finding the final suspect, I especially liked your use of the filter function in the final step, brilliant work.\
 
-One final suggestion would be to embed your results, just having the dataset show for long text blocks like these doesn't give much for the reader, it gets cut off and they can't do some deductions themselves, which would have them more invested. You can do this by using 
+One final suggestion would be to embed your results, just having the dataset show for long text blocks like these doesn't give much for the reader, it gets cut off and they can't do some deductions themselves, which would have them more invested. You can do this by using
+
 ```{r}
 `r datasetname[row#, "variable/column name"]`
 # This would go inside your descriptions not in a code chunk, it is an embedding operation.
 ```
+
 I know Dr. T has not mentioned this for their assignments but this is neat and quick way to access full data values.
 
 Lastly, it is useful for stuff that is changing, lets say you had a simulation function that ran everytime you rendered it. You would need to embed a mean type of value because it would change everytime!\
 Discord:
 
-![](images/Screenshot 2024-11-05 at 10.59.38 AM.png){width="404"}
+![](images/Screenshot%202024-11-05%20at%2010.59.38%20AM.png){width="404"}
 
 <!-- Include a description of how you grew as a collaborator through the weekly pair programming activities.   -->
 

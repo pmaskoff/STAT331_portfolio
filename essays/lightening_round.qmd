@@ -6,16 +6,22 @@ editor: visual
 
 **Answer each of the following questions with *one sentence* including a brief explanation.**
 
-1. Finish the sentence with another student’s name: "If [Name of Student] doesn’t earn an A, then nobody should, because..." Explain your choice and your reasoning.
+1.  Finish the sentence with another student’s name: "If \[Name of Student\] doesn’t earn an A, then nobody should, because..." Explain your choice and your reasoning.\
+    \
+    If Sylvia doesn’t earn an A, then nobody should, as she consistently went above and beyond in every practice activity, and together we worked seamlessly as a team, tackling labs with pure developer and coder brilliance.
 
+2.  What was the most difficult part of the class for you? List a general topic, a specific problem, a kind of work we did, etc. and explain why.\
+    \
+    Initially, learning the join functions was the hardest part of the class for me; though I understand them now, I initially avoided them at all costs, relying instead on familiar functions like str_detect().
 
-2. What was the most difficult part of the class for you? List a general topic, a specific problem, a kind of work we did, etc. and explain why.
+3.  What was the easiest part of the class for you? Explain why.\
+    \
+    The easiest part of the class was the practice activities, working with people is always an advantage for me because I feel like it is one of my strengths.
 
+4.  What part of the class surprised or interested you the most? Explain why.
 
-3. What was the easiest part of the class for you? Explain why.
+    What surprised me the most about this class was how real it is, it is one of my first classes where I have read something like "you need to learn these modern packages in r" and it was the ones we were already learning in class, made me smile.
 
+5.  Give one piece of advice to a student just beginning a quarter of STAT 331 that will help them be successful in learning.
 
-4. What part of the class surprised or interested you the most? Explain why.
-
-
-5. Give one piece of advice to a student just beginning a quarter of STAT 331 that will help them be successful in learning.
+    Start your labs early, you will always run into a problem and will need to take a break to think about it, lots of the solutions just take a break to figure out.

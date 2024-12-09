@@ -9,3 +9,5 @@ editor: visual
 -   Focus specifically on data science concepts and the skills we employed in learning them, not a laundry list of topics that you learned (those are in the syllabus, so I know them already).
 
 -   Focus on a small number of specific areas of growth for you that happened in STAT 331. Identify at least one artifact in your portfolio that illustrates each area of growth and explain how this artifact shows growth in the way you are describing.
+
+This quarter, I have significantly improved my skillset for cleaning up data, particularly in handling diverse datasets. For example, in Lab 5 on joins, I demonstrated growth by using advanced techniques for merging datasets while ensuring data integrity. Additionally, my ability to articulate and discuss ideas has improved through weekly partner activities. My Lab 5 highlights this progress, showing clean code and annotations that reflect my improved ability to explain my though process.

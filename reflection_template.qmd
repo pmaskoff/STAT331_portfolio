@@ -27,8 +27,6 @@ execute:
 #| warning: false
 
 # From Lab 2 Question 1
-library(readr)
-library(readxl)
 surveys <- read_csv(here("data","surveys.csv"))
 ```
 
@@ -50,7 +48,8 @@ military <- read_xlsx(here::here("data",
 
 ```{r}
 #| label: wd-1-txt
-PA
+# Check-in 2.3 Question 3
+ages_tab <- read_table(file = here::here("Week 2", "Check-ins", "Ages_Data", "ages_tab.txt"))
 ```
 
 **WD-2: I can select necessary columns from a dataset.**
@@ -118,23 +117,52 @@ teachers_clean <- teachers |>
 ```{r}
 #| label: wd-3-string
 # Lab 5
-get_fit_now_check_in <- get_fit_now_check_in |>
-  filter(str_detect(membership_id, "48Z"),
-         str_detect(check_in_date, "0109"))
+drivers_license_filter <- drivers_license |>
+  filter(str_detect(plate_number, "H42W"))
 ```
 
 -   factor
 
 ```{r}
 #| label: wd-3-factor
+# Lab 7 Question 5
+fish_summary <- fish |>
+  mutate(cindex_value = cindex(weight, length)) |>
+  group_by(year, species) |>
+  summarise(avg_cindex = mean(cindex_value, na.rm = TRUE), .groups = "drop")
 
+ggplot(data = fish_summary,
+       aes(x = year, 
+           y = avg_cindex, 
+           color = fct_reorder2(species, year, avg_cindex, .desc = TRUE), 
+           group = species)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Average Fish Condition Indices Over Time by Species",
+       x = "Year Of Study",
+       y = "",
+       subtitle = "Condition index: A measure of fish health based on weight and length",
+       color = "Species"
+  ) +
+  scale_color_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(text = element_text(family = "Futura", size = 12),
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  annotate("text", x = 1998, y = 1.25, label = "Outlying Peak", color = "red")
+
+# Revised, changed things like font, color, and titles so plot would be more appealing and readable. Also, added context for CI and what that meant, so the reader could understand. Organized legend so the top would be the species with the highest index value.
 ```
 
 -   date (example must use functions from **lubridate**)
 
 ```{r}
 #| label: wd-3-date
-
+# Lab 5
+gym_check_ins <- get_fit_now_check_in |>
+  mutate(check_in_date = ymd(check_in_date)) |>
+  filter(str_detect(membership_id, "^48Z"), 
+         check_in_date == as.Date("2018-01-09"))
 ```
 
 **WD-4: I can modify existing variables and create new variables in a dataframe for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
@@ -163,21 +191,43 @@ teachers_1 |>
 
 ```{r}
 #| label: wd-4-string
+# Lab 2 Question 8
+surveys <- surveys |>
+  mutate(species_group = str_sub(species, 1, 1))
 
+ggplot(data = surveys,
+       mapping = aes(x = species_group, y = weight)) +
+  geom_boxplot() +
+  labs(title = "Weight Distribution by Species Group",
+       x = "Species Group",
+       y = "Weight (g)")
+
+# Revised to make a cleaner graph
 ```
 
 -   factor (example must use functions from **forcats**)
 
 ```{r}
 #| label: wd-4-factor
+# Lab 7 Question 5
+fish_summary <- fish |>
+  mutate(cindex_value = cindex(weight, length)) |>
+  group_by(year, species) |>
+  summarise(avg_cindex = mean(cindex_value, na.rm = TRUE), .groups = "drop") |>
+  mutate(species = fct_reorder2(species, year, avg_cindex, .desc = TRUE))
 
+# Revised so wouldn't have to use fct_reorder2 in the ggplot pipeline
 ```
 
 -   date (example must use functions from **lubridate**)
 
 ```{r}
 #| label: wd-4-date
-
+# Lab 5
+gym_check_ins <- get_fit_now_check_in |>
+  mutate(check_in_date = ymd(check_in_date)) |>
+  filter(str_detect(membership_id, "^48Z"),
+         check_in_date == as.Date("2018-01-09"))
 ```
 
 **WD-5: I can use mutating joins to combine multiple dataframes.**
@@ -186,28 +236,58 @@ teachers_1 |>
 
 ```{r}
 #| label: wd-5-left
+# Lab 5
+gym_check_ins <- get_fit_now_check_in |>
+  mutate(check_in_date = ymd(check_in_date)) |>
+  filter(str_detect(membership_id, "^48Z"),
+         check_in_date == as.Date("2018-01-09"))
 
+# Relevant check-ins Left Join
+gym_with_members <- gym_check_ins |>
+  left_join(get_fit_now_member, by = c("membership_id" = "id"))
+
+# Match
+gym_suspects <- gym_with_members |>
+  inner_join(person, by = c("person_id" = "id"))
 ```
 
 -   `right_join()`
 
 ```{r}
 #| label: wd-5-right
+# Lab 5
+gym_check_ins <- get_fit_now_check_in |>
+  mutate(check_in_date = ymd(check_in_date)) |>
+  filter(str_detect(membership_id, "^48Z"),
+         check_in_date == as.Date("2018-01-09"))
 
+# Relevant check-ins Right Join
+gym_with_members <- get_fit_now_member |>
+  right_join(gym_check_ins, by = c("id" = "membership_id"))
+
+# Match
+gym_suspects <- gym_with_members |>
+  inner_join(person, by = c("person_id" = "id"))
 ```
 
 -   `inner_join()`
 
 ```{r}
 #| label: wd-5-inner
+# Lab 4 Question 2
+ca_counties <- counties |>
+  filter(state_abbreviation == "CA")
 
+ca_childcare <- childcare_costs |>
+  inner_join(ca_counties,
+             by = "county_fips_code")
 ```
 
 -   `full_join()`
 
 ```{r}
 #| label: wd-5-full
-
+# NOT APPLICABLE
 ```
 
 **WD-6: I can use filtering joins to filter rows from a dataframe.**
@@ -217,19 +297,25 @@ teachers_1 |>
 ```{r}
 #| label: wd-6-semi
 # Lab 5 FINAL JOIN
-GOT_EM <- person |>
-  filter(str_detect(name, "Germuska|Bowers")) |>
-  semi_join(drivers_license, by = c("license_id" = "id"))
+gym_suspects <- get_fit_now_member |>
+  semi_join(gym_check_ins, by = c("id" = "membership_id")) |>
+  semi_join(person, by = c("person_id" = "id"))
+
+# Used a semi-join to match membership IDs and connect it to the person df.
 ```
 
 -   `anti_join()`
 
 ```{r}
 #| label: wd-6-anti
-# PA 4, Question 4
-military_clean <- military |>
-  anti_join(cont_region,
-            by = join_by(Country == Region))
+# Lab 4 Question 4
+missing_years <- median_income_region |>
+  pivot_longer(cols = `2008`:`2018`,
+               names_to = "year",
+               values_to = "income") |>
+  filter(is.na(income)) |>
+  anti_join(data_2018, by = "census_region")
+# Added to check if there was any years that were missing values, which could affect the graph
 ```
 
 **WD-7: I can pivot dataframes from long to wide and visa versa**
@@ -238,6 +324,15 @@ military_clean <- military |>
 
 ```{r}
 #| label: wd-7-long
+# Lab 7 Question 1
+fish_missing_summary <- fish |>
+  summarise(across(everything(), ~ sum(is.na(.)), .names = "missing_{.col}")) |>
+  pivot_longer(cols = starts_with("missing"), 
+               names_to = "variable", 
+               values_to = "missing_count")
+
+fish_missing_summary |>
+  kable()
 
 ```
 
@@ -245,12 +340,18 @@ military_clean <- military |>
 
 ```{r}
 #| label: wd-7-wide
-# Lab 4 Question 4
-median_income_region <- data_2018 |>
-  filter(study_year == 2008 | study_year == 2018) |>
-    pivot_wider(names_from = study_year, 
-              values_from = median_household_income) |>
-  arrange(desc(`2018`))
+# Lab 9 Question 2
+enframed <- enframe(results, 
+                      name = "simulation_number", 
+                      value = "ncorrect")
+
+proportions <- enframed |>
+  count(ncorrect) |>
+  mutate(proportion = n / sum(n)) |>
+  select(ncorrect, proportion) |>
+  pivot_wider(names_from = ncorrect, 
+              values_from = proportion, 
+              names_prefix = "ncorrect_")
 ```
 
 ## Reproducibility
@@ -311,7 +412,16 @@ teachers_clean <- teachers |>
 
 ```{r}
 #| label: r-2-3
-NA
+# Lab 9 Question 1
+randomBabies <- function(nBabies){
+  samplebabes <- sample(1:nBabies, size = nBabies, replace = FALSE)
+  correct <- sum(samplebabes == 1:nBabies)
+  return(correct)
+}
+
+results <- map_int(.x = 1:10000,
+                   .f = ~ randomBabies(n = 4)
+                   )
 ```
 
 **R-3: I can write robust programs that are resistant to changes in inputs.**
@@ -320,14 +430,36 @@ NA
 
 ```{r}
 #| label: r-3-example
-NA
+# Lab 5
+lasthouse <- person |>
+  filter(address_street_name == "Northwestern Dr") |>
+  slice_max(address_number, n = 1)
+
+if (nrow(lasthouse) == 0) stop("No houses found on Northwestern Dr!")
+
+# Witness: Annabel on Franklin Ave
+annabel <- person |>
+  filter(str_detect(name, "Annabel"),
+         address_street_name == "Franklin Ave")
+
+# Combine witnesses
+witnesses <- lasthouse |>
+  bind_rows(annabel)
+
+witnesses
 ```
 
 -   Example of function stops
 
 ```{r}
 #| label: r-3-function-stops
-NA
+# Lab 7 Challenge Question 4
+cindex <- function(weight, length) {
+  stopifnot(is.numeric(weight), is.numeric(length))
+  stopifnot(length(weight) == length(length))
+  cindex_value <- (weight / length^3) * 100
+  return(cindex_value)
+}
 ```
 
 ## Data Visualization & Summarization
@@ -354,6 +486,7 @@ ggplot(data = surveys,
         axis.text.x = element_text(angle = 45)) +
   coord_flip()
 
+# Revised. I had `labs` as a variable so moved the `labs` function outside of the `aes()`.
 ```
 
 -   at least one numeric variable and one categorical variable
@@ -419,43 +552,99 @@ ggplot(plot_data, aes(x = study_year, y = median_price, color = census_region)) 
 
 ```{r}
 #| label: dvs-2-1
-# Lab 2 Question 16
-ggplot(data = surveys,
-       mapping = aes(x = species,
-                     y = weight)) +
-  labs(title = "Weight across Species",
-       x = "Species",
+# Lab 7 Challenge, Question 5
+fish_summary <- fish |>
+  mutate(cindex_value = cindex(weight, length)) |>
+  group_by(year, species) |>
+  summarise(avg_cindex = mean(cindex_value, na.rm = TRUE), .groups = "drop")
+
+ggplot(data = fish_summary,
+       aes(x = year, 
+           y = avg_cindex, 
+           color = fct_reorder2(species, year, avg_cindex, .desc = TRUE), 
+           group = species)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Average Fish Condition Indices Over Time by Species",
+       x = "Year Of Study",
        y = "",
-       subtitle = "Weight in grams") +
-  geom_boxplot(outliers = FALSE) +
-  geom_jitter(color = "orange3",
-              alpha = 0.1) +
-  theme(axis.text.x = element_text(angle = 45))
+       subtitle = "Condition index: A measure of fish health based on weight and length",
+       color = "Species"
+  ) +
+  scale_color_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(text = element_text(family = "Futura", size = 12),
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  annotate("text", x = 1998, y = 1.25, label = "Outlying Peak", color = "red")
+
+# Revised, changed things like font, color, and titles so plot would be more appealing and readable. Also, added context for CI and what that meant, so the reader could understand. Organized legend so the top would be the species with the highest index value.
 ```
 
 -   I can modify the text in my plot to be more readable
 
 ```{r}
 #| label: dvs-2-2
-# Lab 2, Queston 16 
-ggplot(data = surveys,
-       mapping = aes(x = species,
-                     y = weight)) +
-  labs(title = "Weight across Species",
-       x = "Species",
+# Lab 7 Challenge, Question 5
+fish_summary <- fish |>
+  mutate(cindex_value = cindex(weight, length)) |>
+  group_by(year, species) |>
+  summarise(avg_cindex = mean(cindex_value, na.rm = TRUE), .groups = "drop")
+
+ggplot(data = fish_summary,
+       aes(x = year, 
+           y = avg_cindex, 
+           color = fct_reorder2(species, year, avg_cindex, .desc = TRUE), 
+           group = species)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Average Fish Condition Indices Over Time by Species",
+       x = "Year Of Study",
        y = "",
-       subtitle = "Weight in grams") +
-  geom_boxplot(outliers = FALSE) +
-  geom_jitter(color = "orange3",
-              alpha = 0.1) +
-  theme(axis.text.x = element_text(angle = 45))
+       subtitle = "Condition index: A measure of fish health based on weight and length",
+       color = "Species"
+  ) +
+  scale_color_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(text = element_text(family = "Futura", size = 12),
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  annotate("text", x = 1998, y = 1.25, label = "Outlying Peak", color = "red")
+
+# Revised, changed things like font, color, and titles so plot would be more appealing and readable. Also, added context for CI and what that meant, so the reader could understand. Organized legend so the top would be the species with the highest index value.
 ```
 
 -   I can reorder my legend to align with the colors in my plot
 
 ```{r}
 #| label: dvs-2-3
-# Lab 4 Question 6
+# Lab 7 Challenge, Question 5
+fish_summary <- fish |>
+  mutate(cindex_value = cindex(weight, length)) |>
+  group_by(year, species) |>
+  summarise(avg_cindex = mean(cindex_value, na.rm = TRUE), .groups = "drop")
+
+ggplot(data = fish_summary,
+       aes(x = year, 
+           y = avg_cindex, 
+           color = fct_reorder2(species, year, avg_cindex, .desc = TRUE), 
+           group = species)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Average Fish Condition Indices Over Time by Species",
+       x = "Year Of Study",
+       y = "",
+       subtitle = "Condition index: A measure of fish health based on weight and length",
+       color = "Species"
+  ) +
+  scale_color_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(text = element_text(family = "Futura", size = 12),
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  annotate("text", x = 1998, y = 1.25, label = "Outlying Peak", color = "red")
+
+# Revised, changed things like font, color, and titles so plot would be more appealing and readable. Also, added context for CI and what that meant, so the reader could understand. Organized legend so the top would be the species with the highest index value.
 ```
 
 **DVS-3: I show creativity in my visualizations**
@@ -464,31 +653,99 @@ ggplot(data = surveys,
 
 ```{r}
 #| label: dvs-3-1
-# Lab 3 Challenge, Question 2
-ggplot(data = teacher_evals_compare,
-        aes(x = sen_level, 
-            fill = SET_level)) +
-  geom_bar(position = "fill") +
-  labs(x = "Seniority of Instructor",
+# Lab 7 Challenge, Question 5
+fish_summary <- fish |>
+  mutate(cindex_value = cindex(weight, length)) |>
+  group_by(year, species) |>
+  summarise(avg_cindex = mean(cindex_value, na.rm = TRUE), .groups = "drop")
+
+ggplot(data = fish_summary,
+       aes(x = year, 
+           y = avg_cindex, 
+           color = fct_reorder2(species, year, avg_cindex, .desc = TRUE), 
+           group = species)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Average Fish Condition Indices Over Time by Species",
+       x = "Year Of Study",
        y = "",
-       subtitle = "Number of Sections") +
-  scale_fill_manual(values = c("excellent" = "#43719e",
-                               "standard" = "#da7f2d")) +
-  theme_minimal()
+       subtitle = "Condition index: A measure of fish health based on weight and length",
+       color = "Species"
+  ) +
+  scale_color_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(text = element_text(family = "Futura", size = 12),
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  annotate("text", x = 1998, y = 1.25, label = "Outlying Peak", color = "red")
+
+# Revised, changed things like font, color, and titles so plot would be more appealing and readable. Also, added context for CI and what that meant, so the reader could understand. Organized legend so the top would be the species with the highest index value.
 ```
 
 -   I can use annotations
 
 ```{r}
 #| label: dvs-3-2
+# Lab 7 Challenge, Question 5
+fish_summary <- fish |>
+  mutate(cindex_value = cindex(weight, length)) |>
+  group_by(year, species) |>
+  summarise(avg_cindex = mean(cindex_value, na.rm = TRUE), .groups = "drop")
 
+ggplot(data = fish_summary,
+       aes(x = year, 
+           y = avg_cindex, 
+           color = fct_reorder2(species, year, avg_cindex, .desc = TRUE), 
+           group = species)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Average Fish Condition Indices Over Time by Species",
+       x = "Year Of Study",
+       y = "",
+       subtitle = "Condition index: A measure of fish health based on weight and length",
+       color = "Species"
+  ) +
+  scale_color_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(text = element_text(family = "Futura", size = 12),
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  annotate("text", x = 1998, y = 1.25, label = "Outlying Peak", color = "red")
+
+# Revised, changed things like font, color, and titles so plot would be more appealing and readable. Also, added context for CI and what that meant, so the reader could understand. Organized legend so the top would be the species with the highest index value.
 ```
 
 -   I can be creative...
 
 ```{r}
 #| label: dvs-3-3
+# Lab 7 Challenge, Question 5
+fish_summary <- fish |>
+  mutate(cindex_value = cindex(weight, length)) |>
+  group_by(year, species) |>
+  summarise(avg_cindex = mean(cindex_value, na.rm = TRUE), .groups = "drop")
 
+ggplot(data = fish_summary,
+       aes(x = year, 
+           y = avg_cindex, 
+           color = fct_reorder2(species, year, avg_cindex, .desc = TRUE), 
+           group = species)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Average Fish Condition Indices Over Time by Species",
+       x = "Year Of Study",
+       y = "",
+       subtitle = "Condition index: A measure of fish health based on weight and length",
+       color = "Species"
+  ) +
+  scale_color_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(text = element_text(family = "Futura", size = 12),
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  annotate("text", x = 1998, y = 1.25, label = "Outlying Peak", color = "red")
+
+# Revised, changed things like font, color, and titles so plot would be more appealing and readable. Also, added context for CI and what that meant, so the reader could understand. Organized legend so the top would be the species with the highest index value.
 ```
 
 **DVS-4: I can calculate numerical summaries of variables.**
@@ -497,30 +754,30 @@ ggplot(data = teacher_evals_compare,
 
 ```{r}
 #| label: dvs-4-summarize
-# Lab 3 Question 8
-demographics <- teachers_clean |>
-  group_by(academic_degree, seniority, sex) |>
-  summarise(unique_teachers = n_distinct(teacher_id)) |>
-  ungroup()
+# Lab 7 Question 1
+fish_missing_summary <- fish |>
+  summarise(across(everything(), ~ sum(is.na(.)), .names = "missing_{.col}")) |>
+  pivot_longer(cols = starts_with("missing"), 
+               names_to = "variable", 
+               values_to = "missing_count")
 
-sum(demographics$unique_teachers)
+fish_missing_summary |>
+  kable()
 ```
 
 -   Example using `across()`
 
 ```{r}
 #| label: dvs-4-across
-# 
-teachers_unique <- teachers_clean |> 
-  summarize(across(c(teacher_id, course_id), n_distinct))
+# Lab 7 Question 1
+fish_missing_summary <- fish |>
+  summarise(across(everything(), ~ sum(is.na(.)), .names = "missing_{.col}")) |>
+  pivot_longer(cols = starts_with("missing"), 
+               names_to = "variable", 
+               values_to = "missing_count")
 
-# Revised because using across() is more concise and 
-# efficient because it gets rid of the separate count() 
-# operations for each column. Having efficient code is almost as
-# important as having code that works, well not literally, but
-# if you're code is sloppy with a bunch of useless fluff, with
-# a clearly faster and cleaner alternative, many would disregard your
-# skills as a coder.
+fish_missing_summary |>
+  kable()
 ```
 
 **DVS-5: I can find summaries of variables across multiple groups.**
@@ -540,7 +797,33 @@ data_2018 <- ca_childcare |>
 
 ```{r}
 #| label: dvs-5-2
+# Lab 7 Challenge, Question 5
+fish_summary <- fish |>
+  mutate(cindex_value = cindex(weight, length)) |>
+  group_by(year, species) |>
+  summarise(avg_cindex = mean(cindex_value, na.rm = TRUE), .groups = "drop")
 
+ggplot(data = fish_summary,
+       aes(x = year, 
+           y = avg_cindex, 
+           color = fct_reorder2(species, year, avg_cindex, .desc = TRUE), 
+           group = species)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Average Fish Condition Indices Over Time by Species",
+       x = "Year Of Study",
+       y = "",
+       subtitle = "Condition index: A measure of fish health based on weight and length",
+       color = "Species"
+  ) +
+  scale_color_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(text = element_text(family = "Futura", size = 12),
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  annotate("text", x = 1998, y = 1.25, label = "Outlying Peak", color = "red")
+
+# Revised, changed things like font, color, and titles so plot would be more appealing and readable. Also, added context for CI and what that meant, so the reader could understand. Organized legend so the top would be the species with the highest index value.
 ```
 
 **DVS-6: I can create tables which make my summaries clear to the reader.**
@@ -549,24 +832,77 @@ data_2018 <- ca_childcare |>
 
 ```{r}
 #| label: dvs-6-1
-# Lab 3 Question 8
-teachers_unique <- teachers_clean |> 
-  summarize(across(c(teacher_id, course_id), n_distinct))
+# Lab 9 Problem 2
+enframed <- enframe(results, 
+                      name = "simulation_number", 
+                      value = "ncorrect")
 
-# Revised because using across() is more concise and 
-# efficient because it gets rid of the separate count() 
-# operations for each column. Having efficient code is almost as
-# important as having code that works, well not literally, but
-# if you're code is sloppy with a bunch of useless fluff, with
-# a clearly faster and cleaner alternative, many would disregard your
-# skills as a coder.
+proportions <- enframed |>
+  count(ncorrect) |>
+  mutate(proportion = n / sum(n)) |>
+  select(ncorrect, proportion) |>
+  pivot_wider(names_from = ncorrect, 
+              values_from = proportion, 
+              names_prefix = "ncorrect_")
+
+
+proportions |>
+  gt() |>
+    tab_header(
+    title = "Proportion of Simulations by Number of Correctly Returned Babies",
+    subtitle = "Based on 10,000 simulations"
+  ) |>
+  cols_label(
+    ncorrect_0 = "0 Correct",
+    ncorrect_1 = "1 Correct",
+    ncorrect_2 = "2 Correct",
+    ncorrect_4 = "4 Correct"
+  ) |>
+  cols_align(
+    align = "center",
+    columns = everything()
+  )
+
+# Revised to use gt() function and make table creative and readable. Using titles and renaming columns
 ```
 
 -   Example 2
 
 ```{r}
 #| label: dvs-6-2
+# Lab 9 Question 7
+r5 <- function(n) {
+  rounded <- round(n, 5)
+  return(rounded)
+}
 
+summaries <- all_simulations |> 
+  group_by(n) |> 
+  summarize(mean_sim_mean = r5(mean(simulated_means)),
+            sd_sim_mean = r5(sd(simulated_means)),
+            min_sim_mean = r5(min(simulated_means)),
+            max_sim_mean = r5(max(simulated_means)),
+            .groups = 'drop')
+
+summaries |>
+  gt() |>
+    tab_header(
+    title = "Means of Statistics Across Simulations",
+    subtitle = "Including means of means, standard deviations, minimums, and maximums"
+  ) |>
+  cols_label(
+    n = "Simulations",
+    mean_sim_mean = "Mean",
+    sd_sim_mean = "SD",
+    min_sim_mean = "Minimum",
+    max_sim_mean = "Maximum",
+  ) |>
+  cols_align(
+    align = "center",
+    columns = everything()
+  )
+
+# Revised to use gt() function and make table creative and readable. Using titles and renaming columns
 ```
 
 **DVS-7: I show creativity in my tables.**
@@ -575,14 +911,78 @@ teachers_unique <- teachers_clean |>
 
 ```{r}
 #| label: dvs-7-1
+# Lab 9 Question 7
+r5 <- function(n) {
+  rounded <- round(n, 5)
+  return(rounded)
+}
 
+summaries <- all_simulations |> 
+  group_by(n) |> 
+  summarize(mean_sim_mean = r5(mean(simulated_means)),
+            sd_sim_mean = r5(sd(simulated_means)),
+            min_sim_mean = r5(min(simulated_means)),
+            max_sim_mean = r5(max(simulated_means)),
+            .groups = 'drop')
+
+summaries |>
+  gt() |>
+    tab_header(
+    title = "Means of Statistics Across Simulations",
+    subtitle = "Including means of means, standard deviations, minimums, and maximums"
+  ) |>
+  cols_label(
+    n = "Simulations",
+    mean_sim_mean = "Mean",
+    sd_sim_mean = "SD",
+    min_sim_mean = "Minimum",
+    max_sim_mean = "Maximum",
+  ) |>
+  cols_align(
+    align = "center",
+    columns = everything()
+  )
+
+# Revised to use gt() function and make table creative and readable. Using titles and renaming columns
 ```
 
 -   Example 2
 
 ```{r}
 #| label: dvs-7-2
+# Lab 9 Question 7
+r5 <- function(n) {
+  rounded <- round(n, 5)
+  return(rounded)
+}
 
+summaries <- all_simulations |> 
+  group_by(n) |> 
+  summarize(mean_sim_mean = r5(mean(simulated_means)),
+            sd_sim_mean = r5(sd(simulated_means)),
+            min_sim_mean = r5(min(simulated_means)),
+            max_sim_mean = r5(max(simulated_means)),
+            .groups = 'drop')
+
+summaries |>
+  gt() |>
+    tab_header(
+    title = "Means of Statistics Across Simulations",
+    subtitle = "Including means of means, standard deviations, minimums, and maximums"
+  ) |>
+  cols_label(
+    n = "Simulations",
+    mean_sim_mean = "Mean",
+    sd_sim_mean = "SD",
+    min_sim_mean = "Minimum",
+    max_sim_mean = "Maximum",
+  ) |>
+  cols_align(
+    align = "center",
+    columns = everything()
+  )
+
+# Revised to use gt() function and make table creative and readable. Using titles and renaming columns
 ```
 
 ## Program Efficiency
@@ -593,53 +993,70 @@ teachers_unique <- teachers_clean |>
 
 ```{r}
 #| label: pe-1-one-call
-# Lab 3 Question 12
+# Lab 8 Challenge, Question 2
+map_column_factor <- function(df, variables) {
+  colfact <- map_at(df, variables, as.factor)
+  bind_cols(colfact)
+}
 
-teachers_clean |>
-  filter(academic_degree %in% c("dr", "prof"), sex == "female") |>
-  group_by(teacher_id) |>
-  summarise(avg_resprate = mean(resp_share, na.rm = TRUE),
-    rank = case_when(
-      avg_resprate == max(avg_resprate) ~ "Highest",
-      avg_resprate == min(avg_resprate) ~ "Lowest",
-      TRUE ~ ""
-    )
-  ) |>
-  filter(rank != "") |>
-  print()
+colfacts <- c("teacher_id", "weekday", "academic_degree", "seniority", "gender")
 
-# Revised by deleting mutate operation and just 
-# putting what was inside mutate into summarise
-# instead, because summarise() already modifys 
-# the dataset, the mutate function is not needed. 
-# Concise code is very important, if I am unable to 
-# write concise code at this level, how would I be able
-# to write concise code with 100x more complicated problems 
-# in the real world.
+fct_evals <- map_column_factor(evals, colfacts)
+
+fct_evals_type <- maptype(fct_evals)
+
+fct_evals_type |>
+  kable()
 ```
 
 -   `across()`
 
 ```{r}
 #| label: pe-1-across
-# Lab 3 Question 8
-teachers_unique <- teachers_clean |> 
-  summarize(across(c(teacher_id, course_id), n_distinct))
+# Lab 7 Question 1
+fish_missing_summary <- fish |>
+  summarise(across(everything(), ~ sum(is.na(.)), .names = "missing_{.col}")) |>
+  pivot_longer(cols = starts_with("missing"), 
+               names_to = "variable", 
+               values_to = "missing_count")
 
-# Revised because using across() is more concise and 
-# efficient because it gets rid of the separate count() 
-# operations for each column. Having efficient code is almost as
-# important as having code that works, well not literally, but
-# if you're code is sloppy with a bunch of useless fluff, with
-# a clearly faster and cleaner alternative, many would disregard your
-# skills as a coder.
+fish_missing_summary |>
+  kable()
 ```
 
 -   `map()` functions
 
 ```{r}
 #| label: pe-1-map-1
-NA
+# Lab 8 Question 2
+map_column_factor <- function(df, variables) {
+  colfact <- map_at(df, variables, as.factor)
+  bind_cols(colfact)
+}
+
+colfacts <- c("teacher_id", "weekday", "academic_degree", "seniority", "gender")
+
+fct_evals <- map_column_factor(evals, colfacts)
+
+fct_evals_type <- maptype(fct_evals)
+
+fct_evals_type |>
+  kable()
+
+# Lab 8 Question 1
+maptype <- function(df) {
+  tibble(variable = names(df), 
+         type = map_chr(df, class))
+}
+
+surveys_type <- maptype(surveys)
+
+surveys_type <- surveys_type |>
+  pivot_wider(names_from = variable,
+              values_from = type)
+
+surveys_type |>
+  kable()
 ```
 
 **PE-2: I can write functions to reduce repetition in my code.**
@@ -648,56 +1065,24 @@ NA
 
 ```{r}
 #| label: pe-2-1
-# Lab 3 Question 12
-teachers_clean |>
-  filter(academic_degree %in% c("dr", "prof"), sex == "female") |>
-  group_by(teacher_id) |>
-  summarise(avg_resprate = mean(resp_share, na.rm = TRUE),
-    rank = case_when(
-      avg_resprate == max(avg_resprate) ~ "Highest",
-      avg_resprate == min(avg_resprate) ~ "Lowest",
-      TRUE ~ ""
-    )
-  ) |>
-  filter(rank != "") |>
-  print()
-
-# Revised by deleting mutate operation and just 
-# putting what was inside mutate into summarise
-# instead, because summarise() already modifys 
-# the dataset, the mutate function is not needed. 
-# Concise code is very important, if I am unable to 
-# write concise code at this level, how would I be able
-# to write concise code with 100x more complicated problems 
-# in the real world.
+# Lab 7 Challenge Question 4
+cindex <- function(weight, length) {
+  stopifnot(is.numeric(weight), is.numeric(length))
+  stopifnot(length(weight) == length(length))
+  cindex_value <- (weight / length^3) * 100
+  return(cindex_value)
+}
 ```
 
 -   Function that operates on data frames
 
 ```{r}
 #| label: pe-2-2
-# Lab 3 Question 12
-teachers_clean |>
-  filter(academic_degree %in% c("dr", "prof"), sex == "female") |>
-  group_by(teacher_id) |>
-  summarise(avg_resprate = mean(resp_share, na.rm = TRUE),
-    rank = case_when(
-      avg_resprate == max(avg_resprate) ~ "Highest",
-      avg_resprate == min(avg_resprate) ~ "Lowest",
-      TRUE ~ ""
-    )
-  ) |>
-  filter(rank != "") |>
-  print()
-
-# Revised by deleting mutate operation and just 
-# putting what was inside mutate into summarise
-# instead, because summarise() already modifys 
-# the dataset, the mutate function is not needed. 
-# Concise code is very important, if I am unable to 
-# write concise code at this level, how would I be able
-# to write concise code with 100x more complicated problems 
-# in the real world.
+# Lab 8 Question 1
+maptype <- function(df) {
+  tibble(variable = names(df), 
+         type = map_chr(df, class))
+}
 ```
 
 **PE-3:I can use iteration to reduce repetition in my code.**
@@ -706,21 +1091,47 @@ teachers_clean |>
 
 ```{r}
 #| label: pe-3-across
-NA
+# Lab 7 Question 1
+fish_missing_summary <- fish |>
+  summarise(across(everything(), ~ sum(is.na(.)), .names = "missing_{.col}")) |>
+  pivot_longer(cols = starts_with("missing"), 
+               names_to = "variable", 
+               values_to = "missing_count")
+
+fish_missing_summary |>
+  kable()
 ```
 
 -   `map()` function with **one** input (e.g., `map()`, `map_chr()`, `map_dbl()`, etc.)
 
 ```{r}
 #| label: pe-3-map-1
-NA
+# Lab 9 Question 4
+simulate_means <- function(n, df){
+  stopifnot(
+    is.numeric(n),
+    length(n) == 1,
+    n > 0,
+    is.numeric(df),
+    length(df) == 1,
+    df > 0
+  )
+  map_dbl(.x = 1:n, 
+          .f = ~rchisq(n = 100, df) %>% mean()
+          )
+}
 ```
 
 -   `map()` function with **more than one** input (e.g., `map_2()` or `pmap()`)
 
 ```{r}
 #| label: pe-3-map-2
-NA
+# Lab 9 Question 6
+all_simulations <- grid |> 
+  mutate(simulated_means = pmap(.l = list(n, df), 
+                                .f = simulate_means)
+         ) |> 
+  unnest(cols = simulated_means) 
 ```
 
 **PE-4: I can use modern tools when carrying out my analysis.**
@@ -729,14 +1140,48 @@ NA
 
 ```{r}
 #| label: pe-4-1
+# Lab 9 Problem 2
+enframed <- enframe(results, 
+                      name = "simulation_number", 
+                      value = "ncorrect")
 
+proportions <- enframed |>
+  count(ncorrect) |>
+  mutate(proportion = n / sum(n)) |>
+  select(ncorrect, proportion) |>
+  pivot_wider(names_from = ncorrect, 
+              values_from = proportion, 
+              names_prefix = "ncorrect_")
 ```
 
 -   I can connect a data wrangling pipeline into a `ggplot()`
 
 ```{r}
 #| label: pe-4-2
+fish |>
+  mutate(cindex_value = cindex(weight, length)) |>
+  group_by(year, species) |>
+  summarise(avg_cindex = mean(cindex_value, na.rm = TRUE), .groups = "drop") |>
+  ggplot(aes(x = year, 
+           y = avg_cindex, 
+           color = fct_reorder2(species, year, avg_cindex, .desc = TRUE), 
+           group = species)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Average Fish Condition Indices Over Time by Species",
+       x = "Year Of Study",
+       y = "",
+       subtitle = "Condition index: A measure of fish health based on weight and length",
+       color = "Species"
+  ) +
+  scale_color_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(text = element_text(family = "Futura", size = 12),
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  annotate("text", x = 1998, y = 1.25, label = "Outlying Peak", color = "red")
 
+# Revised, changed things like font, color, and titles so plot would be more appealing and readable. Also, added context for CI and what that meant, so the reader could understand. Organized legend so the top would be the species with the highest index value.
 ```
 
 ## Data Simulation & Statisical Models
@@ -747,14 +1192,36 @@ NA
 
 ```{r}
 #| label: dsm-1-1
-NA
+# Lab 9 Question 4
+simulate_means <- function(n, df){
+  stopifnot(
+    is.numeric(n),
+    length(n) == 1,
+    n > 0,
+    is.numeric(df),
+    length(df) == 1,
+    df > 0
+  )
+  map_dbl(.x = 1:n, 
+          .f = ~rchisq(n = 100, df) %>% mean()
+          )
+}
 ```
 
 -   Example 2
 
 ```{r}
 #| label: dsm-1-2
-NA
+# Lab 9 Question 1
+randomBabies <- function(nBabies){
+  samplebabes <- sample(1:nBabies, size = nBabies, replace = FALSE)
+  correct <- sum(samplebabes == 1:nBabies)
+  return(correct)
+}
+
+results <- map_int(.x = 1:10000,
+                   .f = ~ randomBabies(n = 4)
+                   )
 ```
 
 **DSSM-2: I can conduct common statistical analyses in R.**
